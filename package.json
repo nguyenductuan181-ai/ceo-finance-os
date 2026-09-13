@@ -1,0 +1,9 @@
+{
+  "name": "ceo-finance",
+  "version": "1.0.0",
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
+  }
+}

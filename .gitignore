@@ -1,0 +1,11 @@
+*.pyc
+__pycache__/
+.env
+secrets/
+*.keystore
+*.jks
+android/.gradle/
+android/build/
+android/app/build/
+node_modules/
+/dev/shm/*

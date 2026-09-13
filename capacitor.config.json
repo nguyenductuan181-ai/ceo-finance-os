@@ -1,0 +1,9 @@
+{
+  "appId": "com.ceofinance.app",
+  "appName": "CEO Finance",
+  "webDir": "www",
+  "server": {
+    "url": "https://finance.185-218-125-46.sslip.io",
+    "cleartext": false
+  }
+}
