@@ -3,322 +3,261 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>CEO Finance OS</title>
+  <title>Tài Chính — CEO OS</title>
   
-  <!-- PWA & Android Meta Tags -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#060911">
+  <meta name="theme-color" content="#0B0E14">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Tài Chính">
   <link rel="apple-touch-icon" href="/static/icon-192.png">
   <link rel="icon" type="image/png" href="/static/icon-192.png">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: #060911;
-      color: #F8FAFC;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0B0E14;
+      color: #E2E8F0;
       -webkit-tap-highlight-color: transparent;
       overscroll-behavior-y: contain;
+      letter-spacing: -0.01em;
     }
-    .titanium-card {
-      background: radial-gradient(120% 120% at 50% 0%, #1E293B 0%, #0F172A 60%, #070B14 100%);
-      border: 1px solid rgba(245, 158, 11, 0.35);
-      box-shadow: 0 10px 40px -10px rgba(245, 158, 11, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    }
-    .surface-card {
-      background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(20px);
+    /* Quiet Luxury Card: Matte finish, hairline border, no neon */
+    .matte-card {
+      background: #111520;
       border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.4);
     }
-    .key-btn {
-      background: rgba(30, 41, 59, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      transition: all 0.08s ease;
+    .matte-subcard {
+      background: #161C2B;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .key-btn:active {
+    /* iOS Style Circle Keypad */
+    .ios-key {
+      background: #161C2B;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .ios-key:active {
       transform: scale(0.92);
-      background: rgba(245, 158, 11, 0.25);
-      border-color: rgba(245, 158, 11, 0.5);
+      background: #252F47;
+      border-color: rgba(255, 255, 255, 0.15);
     }
-    .pill-active {
-      background: #F59E0B !important;
-      color: #060911 !important;
-      font-weight: 800 !important;
-      box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+    .pill-select {
+      background: #161C2B;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #94A3B8;
+      transition: all 0.15s ease;
     }
-    .glow-gold {
-      text-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+    .pill-select.active {
+      background: #F1F5F9;
+      color: #0B0E14;
+      font-weight: 700;
+      border-color: #F1F5F9;
     }
-    
-    /* Magic UI: Dot Matrix Background */
-    .bg-dot-matrix {
-      background-image: radial-gradient(rgba(245, 158, 11, 0.08) 1px, transparent 1px);
-      background-size: 20px 20px;
-    }
-    
-    /* Magic UI: Border Beam Animation */
-    @keyframes border-beam {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .border-beam-container {
-      position: relative;
-      overflow: hidden;
-    }
-    .border-beam-container::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: conic-gradient(from 0deg, transparent 0deg 280deg, rgba(245, 158, 11, 0.8) 320deg, rgba(251, 191, 36, 1) 360deg);
-      animation: border-beam 5s linear infinite;
-      z-index: 0;
-      pointer-events: none;
-    }
-    .border-beam-inner {
-      position: relative;
-      z-index: 1;
-      background: radial-gradient(120% 120% at 50% 0%, #172033 0%, #0D1322 60%, #060911 100%);
-      border-radius: inherit;
-    }
-
-    /* Hide scrollbar */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="min-h-screen pb-24 select-none relative overflow-x-hidden bg-dot-matrix">
+<body class="min-h-screen pb-24 select-none">
 
-  <!-- AMBIENT BACKGROUND GLOW -->
-  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
-  <div class="fixed top-96 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
-
-  <!-- TOP APP BAR -->
-  <header class="border-b border-slate-800/60 bg-slate-950/70 sticky top-0 z-40 backdrop-blur-xl">
-    <div class="max-w-md mx-auto px-4 h-14 flex items-center justify-between">
+  <!-- TOP BAR (TỐI GIẢN KIỂU APPLE / LINEAR) -->
+  <header class="border-b border-slate-800/40 bg-[#0B0E14]/90 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-md mx-auto px-5 h-14 flex items-center justify-between">
       <div class="flex items-center space-x-2.5">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center font-black text-slate-950 text-sm shadow-lg shadow-amber-500/20">
+        <div class="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700/80 flex items-center justify-center text-xs font-semibold text-slate-200">
           đ
         </div>
-        <div>
-          <h1 class="text-xs font-black tracking-tight text-white flex items-center gap-1.5">
-            CEO FINANCE <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">OS</span>
-          </h1>
-          <p id="sync-indicator" class="text-[9px] text-emerald-400 flex items-center gap-1 font-semibold">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            Đồng bộ Cloud (12ms)
-          </p>
+        <div class="text-sm font-semibold text-slate-100 tracking-tight">
+          Sổ tài chính
         </div>
       </div>
-      <div class="flex items-center space-x-1.5">
-        <a href="/api/export-excel" download class="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-all flex items-center gap-1" title="Tải file Excel tự động có sẵn công thức">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+      <div class="flex items-center space-x-2 text-xs">
+        <a href="/api/export-excel" download class="px-2.5 py-1 rounded-md text-slate-300 bg-slate-900 border border-slate-800 hover:text-white transition-all">
           Xuất Excel
         </a>
-        <a id="sheet-link" href="#" target="_blank" class="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-emerald-400 transition-all" title="Mở Google Sheet">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-        </a>
-        <button onclick="fetchOverview(true)" class="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-all">
-          <svg id="refresh-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        <button onclick="fetchOverview(true)" class="p-1.5 rounded-md text-slate-400 hover:text-slate-200 bg-slate-900 border border-slate-800 transition-all">
+          <svg id="refresh-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- APP CONTENT CONTAINER (MAX-W-MD CHUẨN THIẾT KẾ MOBILE APP) -->
-  <main class="max-w-md mx-auto px-4 mt-3 space-y-4">
+  <!-- NỘI DUNG CHÍNH (THIẾT KẾ ĐIỀM TĨNH, KHÔNG BÓNG BẨY) -->
+  <main class="max-w-md mx-auto px-5 mt-4 space-y-4">
 
-    <!-- HERO CARD: THẺ ĐEN TITANIUM GOLD (MAGIC UI BORDER BEAM + REVOLUT STYLE) -->
-    <div class="border-beam-container rounded-3xl p-[1.5px] shadow-2xl">
-      <div class="border-beam-inner rounded-3xl p-5 relative overflow-hidden">
-      <!-- Decor lines -->
-      <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+    <!-- THẺ TÀI SẢN RÒNG (MATTE BLACK TITANIUM - LÌ VÀ CHẮC CHẮN) -->
+    <div class="matte-card rounded-2xl p-5">
+      <div class="flex justify-between items-baseline">
+        <span class="text-xs font-medium text-slate-400">Tài sản ròng</span>
+        <span class="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Trực tuyến
+        </span>
+      </div>
       
-      <div class="flex justify-between items-start">
-        <div>
-          <div class="text-[10px] font-bold text-amber-400/80 uppercase tracking-widest flex items-center gap-1">
-            <span>GIÁ TRỊ RÒNG (NET WORTH)</span>
-          </div>
-          <div id="hero-net-worth" class="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1 glow-gold">
-            9.157.000.000 <span class="text-base text-amber-400 font-bold">đ</span>
-          </div>
+      <div class="mt-2 flex items-baseline gap-1.5">
+        <div id="hero-net-worth" class="text-3xl font-bold text-white tracking-tight">
+          9.157.000.000
         </div>
-        <!-- Smart Chip Icon -->
-        <div class="w-9 h-7 rounded-md bg-gradient-to-br from-amber-200/40 to-amber-600/30 border border-amber-400/50 flex items-center justify-center">
-          <div class="w-5 h-3.5 border border-amber-400/60 rounded-sm grid grid-cols-2 gap-0.5 p-0.5">
-            <div class="bg-amber-400/40"></div><div class="bg-amber-400/40"></div>
-          </div>
-        </div>
+        <span class="text-sm font-medium text-slate-400">đ</span>
       </div>
 
-      <!-- Assets & Liabilities Breakdown -->
-      <div class="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-700/50">
+      <div class="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-800/80 text-xs">
         <div>
-          <div class="text-[10px] text-slate-400 font-semibold">TỔNG TÀI SẢN</div>
-          <div id="hero-assets" class="text-sm font-bold text-emerald-400 mt-0.5">10.757.000.000 đ</div>
+          <span class="text-slate-500 text-[11px]">Tài sản</span>
+          <div id="hero-assets" class="font-semibold text-slate-200 mt-0.5">10.757.000.000 đ</div>
         </div>
         <div>
-          <div class="text-[10px] text-slate-400 font-semibold">TỔNG NỢ</div>
-          <div id="hero-liabilities" class="text-sm font-bold text-rose-400 mt-0.5">1.600.000.000 đ</div>
+          <span class="text-slate-500 text-[11px]">Nợ phải trả</span>
+          <div id="hero-liabilities" class="font-semibold text-slate-400 mt-0.5">1.600.000.000 đ</div>
         </div>
-      </div>
       </div>
     </div>
 
-    <!-- TAB SELECTOR: [ ⚡ GHI NHẬP ]  |  [ 📊 THỐNG KÊ ]  |  [ 📑 SỔ GIAO DỊCH ] -->
-    <div class="grid grid-cols-3 gap-1 bg-slate-950/80 p-1 rounded-2xl border border-slate-800 text-xs font-bold">
-      <button onclick="switchTab('tab-input')" id="tab-btn-input" class="py-2.5 rounded-xl bg-slate-800 text-amber-400 shadow-md transition-all">
-        ⚡ Ghi Nhập
+    <!-- TAB ĐIỀU HƯỚNG TỐI GIẢN (KHÔNG ĐỔ BÓNG RỰC RỠ) -->
+    <div class="flex border-b border-slate-800/80 text-xs font-medium">
+      <button onclick="switchTab('tab-input')" id="tab-btn-input" class="pb-2.5 px-3 border-b-2 border-slate-200 text-white font-semibold transition-all">
+        Ghi chép
       </button>
-      <button onclick="switchTab('tab-stats')" id="tab-btn-stats" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition-all">
-        📊 Thống Kê
+      <button onclick="switchTab('tab-stats')" id="tab-btn-stats" class="pb-2.5 px-3 text-slate-400 hover:text-slate-200 transition-all">
+        Tổng quan tháng
       </button>
-      <button onclick="switchTab('tab-history')" id="tab-btn-history" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition-all">
-        📑 Sổ Kế Toán
+      <button onclick="switchTab('tab-history')" id="tab-btn-history" class="pb-2.5 px-3 text-slate-400 hover:text-slate-200 transition-all">
+        Lịch sử
       </button>
     </div>
 
-    <!-- SECTION 1: GHI NHẬP TỨC THÌ (REVOLUT NATIVE NUMPAD) -->
-    <div id="tab-input" class="space-y-3.5">
+    <!-- PHẦN 1: GHI CHÉP THU CHI (BÀN PHÍM SỐ TRÒN TRỊA THÂN THIỆN) -->
+    <div id="tab-input" class="space-y-4 pt-1">
       
-      <!-- Type Switcher (Chi Tiền / Thu Tiền) -->
-      <div class="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-2xl border border-slate-800">
-        <button type="button" id="btn-type-chi" onclick="setType('Chi phí')" class="py-2.5 text-xs font-black rounded-xl bg-rose-500 text-white shadow-lg transition-all">
-          - CHI PHÍ
+      <!-- Phân loại Thu / Chi dạng segmented control -->
+      <div class="grid grid-cols-2 p-1 rounded-xl bg-slate-900 border border-slate-800/80 text-xs font-semibold">
+        <button type="button" id="btn-type-chi" onclick="setType('Chi phí')" class="py-2 rounded-lg bg-[#161C2B] text-rose-400 shadow-sm transition-all">
+          Chi tiêu
         </button>
-        <button type="button" id="btn-type-thu" onclick="setType('Thu nhập')" class="py-2.5 text-xs font-black rounded-xl text-slate-400 hover:text-white transition-all">
-          + THU NHẬP
+        <button type="button" id="btn-type-thu" onclick="setType('Thu nhập')" class="py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all">
+          Thu nhập
         </button>
       </div>
 
-      <!-- LED AMOUNT DISPLAY -->
-      <div class="surface-card rounded-3xl p-4 text-center border border-amber-500/20 relative">
-        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Số Tiền Giao Dịch</div>
-        <div class="flex items-center justify-center gap-1">
-          <span id="display-amount" class="text-3xl sm:text-4xl font-black text-amber-300 font-mono tracking-tight glow-gold">0</span>
-          <span class="text-lg font-extrabold text-amber-400">đ</span>
+      <!-- MÀN HÌNH SỐ TIỀN CHÂN PHƯƠNG, TO RÕ RÀNG -->
+      <div class="matte-subcard rounded-2xl p-4 text-center">
+        <div class="text-[11px] text-slate-400 font-medium">Số tiền</div>
+        <div class="mt-1 flex items-baseline justify-center gap-1">
+          <span id="display-amount" class="text-4xl font-semibold text-white tracking-tight">0</span>
+          <span class="text-lg text-slate-400 font-normal">đ</span>
         </div>
       </div>
 
-      <!-- CIRCULAR CATEGORY BADGES (1-TAP SELECT) -->
+      <!-- CHIP HẠNG MỤC THANH LỊCH (MÀU ĐẬM, CHỮ GỌN) -->
       <div>
-        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Chọn nhanh hạng mục</div>
-        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1" id="cat-chips">
-          <button type="button" onclick="selectCat(this, 'ĂN UỐNG, SINH HOẠT THIẾT YẾU TẠO LẬP GIÁ TRỊ GIA ĐÌNH')" class="cat-pill pill-active shrink-0 px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-200 transition-all flex items-center gap-1.5">
-            <span>🍚</span> Ăn uống
+        <div class="text-[11px] font-medium text-slate-400 mb-2">Hạng mục</div>
+        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
+          <button type="button" onclick="selectCat(this, 'ĂN UỐNG, SINH HOẠT THIẾT YẾU TẠO LẬP GIÁ TRỊ GIA ĐÌNH')" class="cat-pill pill-select active shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium">
+            Ăn uống
           </button>
-          <button type="button" onclick="selectCat(this, 'CAFÉ, ĂN SÁNG, ĂN NGOÀI')" class="cat-pill shrink-0 px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-200 transition-all flex items-center gap-1.5">
-            <span>☕</span> Cafe, Ăn ngoài
+          <button type="button" onclick="selectCat(this, 'CAFÉ, ĂN SÁNG, ĂN NGOÀI')" class="cat-pill pill-select shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium">
+            Cafe, Ăn ngoài
           </button>
-          <button type="button" onclick="selectCat(this, 'XĂNG XE, ĐIỆN THOẠI XÂY DỰNG MỐI QUAN HỆ')" class="cat-pill shrink-0 px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-200 transition-all flex items-center gap-1.5">
-            <span>⛽</span> Xăng xe
+          <button type="button" onclick="selectCat(this, 'XĂNG XE, ĐIỆN THOẠI XÂY DỰNG MỐI QUAN HỆ')" class="cat-pill pill-select shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium">
+            Đi lại
           </button>
-          <button type="button" onclick="selectCat(this, 'HỌC TẬP (TỰ HỌC)')" class="cat-pill shrink-0 px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-200 transition-all flex items-center gap-1.5">
-            <span>📚</span> Học tập
+          <button type="button" onclick="selectCat(this, 'HỌC TẬP (TỰ HỌC)')" class="cat-pill pill-select shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium">
+            Học tập
           </button>
-          <button type="button" onclick="selectCat(this, 'TIẾP KHÁCH XÂY DỰNG MỐI QUAN HỆ')" class="cat-pill shrink-0 px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-200 transition-all flex items-center gap-1.5">
-            <span>🤝</span> Tiếp khách
+          <button type="button" onclick="selectCat(this, 'TIẾP KHÁCH XÂY DỰNG MỐI QUAN HỆ')" class="cat-pill pill-select shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium">
+            Tiếp khách
           </button>
-          <button type="button" onclick="selectCat(this, 'THUÊ NHÀ')" class="cat-pill shrink-0 px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-200 transition-all flex items-center gap-1.5">
-            <span>🏠</span> Thuê nhà
+          <button type="button" onclick="selectCat(this, 'THUÊ NHÀ')" class="cat-pill pill-select shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium">
+            Thuê nhà
           </button>
-          <button type="button" onclick="selectCat(this, 'THU NHẬP TỪ LÀM TƯ')" class="cat-pill shrink-0 px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-200 transition-all flex items-center gap-1.5">
-            <span>💵</span> Thu nhập
+          <button type="button" onclick="selectCat(this, 'THU NHẬP TỪ LÀM TƯ')" class="cat-pill pill-select shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium">
+            Thu nhập tư
           </button>
         </div>
       </div>
 
-      <!-- NOTE & DATE INPUTS -->
-      <div class="grid grid-cols-3 gap-2">
+      <!-- Ô NHẬP NỘI DUNG & NGÀY -->
+      <div class="grid grid-cols-3 gap-2 text-xs">
         <div class="col-span-2">
-          <input type="text" id="input-note" placeholder="Nội dung (VD: Cơm trưa, Xăng...)" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-400 font-semibold placeholder:text-slate-500">
+          <input type="text" id="input-note" placeholder="Ghi chú (tùy chọn)" class="w-full px-3 py-2 rounded-xl bg-[#111520] border border-slate-800 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-slate-600">
         </div>
         <div>
-          <input type="date" id="input-date" class="w-full px-2 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-400 font-semibold text-center">
+          <input type="date" id="input-date" class="w-full px-2 py-2 rounded-xl bg-[#111520] border border-slate-800 text-slate-200 focus:outline-none focus:border-slate-600 text-center">
         </div>
       </div>
 
-      <!-- REVOLUT TACTILE NUMPAD (12 PHÍM CHẠM) -->
-      <div class="grid grid-cols-3 gap-2 pt-1">
-        <button type="button" onclick="pressNum('1')" class="key-btn py-3.5 rounded-2xl text-xl font-bold text-white">1</button>
-        <button type="button" onclick="pressNum('2')" class="key-btn py-3.5 rounded-2xl text-xl font-bold text-white">2</button>
-        <button type="button" onclick="pressNum('3')" class="key-btn py-3.5 rounded-2xl text-xl font-bold text-white">3</button>
+      <!-- BÀN PHÍM SỐ TRÒN KIỂU IPHONE PASSCODE / CALCULATOR -->
+      <div class="grid grid-cols-3 gap-2.5 pt-1">
+        <button type="button" onclick="pressNum('1')" class="ios-key py-3 rounded-xl text-xl font-normal text-slate-200">1</button>
+        <button type="button" onclick="pressNum('2')" class="ios-key py-3 rounded-xl text-xl font-normal text-slate-200">2</button>
+        <button type="button" onclick="pressNum('3')" class="ios-key py-3 rounded-xl text-xl font-normal text-slate-200">3</button>
 
-        <button type="button" onclick="pressNum('4')" class="key-btn py-3.5 rounded-2xl text-xl font-bold text-white">4</button>
-        <button type="button" onclick="pressNum('5')" class="key-btn py-3.5 rounded-2xl text-xl font-bold text-white">5</button>
-        <button type="button" onclick="pressNum('6')" class="key-btn py-3.5 rounded-2xl text-xl font-bold text-white">6</button>
+        <button type="button" onclick="pressNum('4')" class="ios-key py-3 rounded-xl text-xl font-normal text-slate-200">4</button>
+        <button type="button" onclick="pressNum('5')" class="ios-key py-3 rounded-xl text-xl font-normal text-slate-200">5</button>
+        <button type="button" onclick="pressNum('6')" class="ios-key py-3 rounded-xl text-xl font-normal text-slate-200">6</button>
 
-        <button type="button" onclick="pressNum('7')" class="key-btn py-3.5 rounded-2xl text-xl font-bold text-white">7</button>
-        <button type="button" onclick="pressNum('8')" class="key-btn py-3.5 rounded-2xl text-xl font-bold text-white">8</button>
-        <button type="button" onclick="pressNum('9')" class="key-btn py-3.5 rounded-2xl text-xl font-bold text-white">9</button>
+        <button type="button" onclick="pressNum('7')" class="ios-key py-3 rounded-xl text-xl font-normal text-slate-200">7</button>
+        <button type="button" onclick="pressNum('8')" class="ios-key py-3 rounded-xl text-xl font-normal text-slate-200">8</button>
+        <button type="button" onclick="pressNum('9')" class="ios-key py-3 rounded-xl text-xl font-normal text-slate-200">9</button>
 
-        <button type="button" onclick="pressK('000')" class="key-btn py-3.5 rounded-2xl text-base font-bold text-amber-400">000</button>
-        <button type="button" onclick="pressNum('0')" class="key-btn py-3.5 rounded-2xl text-xl font-bold text-white">0</button>
-        <button type="button" onclick="pressBack()" class="key-btn py-3.5 rounded-2xl text-lg font-bold text-rose-400 flex items-center justify-center">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414-6.414a2 2 0 011.414-.586H19a2 2 0 012 2v10a2 2 0 01-2 2h-7.172a2 2 0 01-1.414-.586L3 12z"/></svg>
+        <button type="button" onclick="pressK('000')" class="ios-key py-3 rounded-xl text-sm font-medium text-slate-400">000</button>
+        <button type="button" onclick="pressNum('0')" class="ios-key py-3 rounded-xl text-xl font-normal text-slate-200">0</button>
+        <button type="button" onclick="pressBack()" class="ios-key py-3 rounded-xl text-slate-400 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414-6.414a2 2 0 011.414-.586H19a2 2 0 012 2v10a2 2 0 01-2 2h-7.172a2 2 0 01-1.414-.586L3 12z"/></svg>
         </button>
       </div>
 
-      <!-- MAIN ACTION BUTTON -->
-      <button type="button" id="btn-submit-main" onclick="submitQuickTransaction()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-98 text-slate-950 font-black text-sm tracking-wide shadow-xl shadow-amber-500/25 transition-all flex items-center justify-center gap-2">
-        <span>XÁC NHẬN LƯU (ĐỒNG BỘ 12MS)</span>
+      <!-- NÚT LƯU LÌ VÀ ĐẦM CHẮC (KHÔNG BÓNG BẨY) -->
+      <button type="button" id="btn-submit-main" onclick="submitQuickTransaction()" class="w-full py-3.5 rounded-xl bg-slate-100 hover:bg-white active:scale-[0.98] text-slate-900 font-semibold text-sm transition-all flex items-center justify-center">
+        Lưu giao dịch
       </button>
 
-      <div id="toast-box" class="hidden p-3 rounded-2xl text-xs font-bold text-center transition-all"></div>
+      <div id="toast-box" class="hidden p-2.5 rounded-xl text-xs font-medium text-center transition-all"></div>
     </div>
 
-    <!-- SECTION 2: THỐNG KÊ CHI TIẾT (TỔNG HỢP THÁNG 2 & CẢ NĂM) -->
-    <div id="tab-stats" class="hidden space-y-3.5">
-      <!-- 3 Chỉ số tháng 2 -->
+    <!-- PHẦN 2: THỐNG KÊ THÁNG (GỌN GÀNG VÀ CHUẨN MỰC) -->
+    <div id="tab-stats" class="hidden space-y-3 pt-1">
       <div class="grid grid-cols-3 gap-2">
-        <div class="surface-card p-3 rounded-2xl text-center border-l-2 border-emerald-500">
-          <div class="text-[9px] font-bold text-slate-400">THU THÁNG 2</div>
-          <div id="stat-m2-inc" class="text-xs font-black text-emerald-400 mt-1">--</div>
+        <div class="matte-subcard p-3 rounded-xl text-center">
+          <div class="text-[10px] text-slate-400 font-medium">Thu tháng 2</div>
+          <div id="stat-m2-inc" class="text-xs font-semibold text-emerald-400 mt-1">--</div>
         </div>
-        <div class="surface-card p-3 rounded-2xl text-center border-l-2 border-rose-500">
-          <div class="text-[9px] font-bold text-slate-400">CHI THÁNG 2</div>
-          <div id="stat-m2-exp" class="text-xs font-black text-rose-400 mt-1">--</div>
+        <div class="matte-subcard p-3 rounded-xl text-center">
+          <div class="text-[10px] text-slate-400 font-medium">Chi tháng 2</div>
+          <div id="stat-m2-exp" class="text-xs font-semibold text-rose-400 mt-1">--</div>
         </div>
-        <div class="surface-card p-3 rounded-2xl text-center border-l-2 border-amber-500">
-          <div class="text-[9px] font-bold text-slate-400">DƯ RÒNG (T2)</div>
-          <div id="stat-m2-net" class="text-xs font-black text-amber-400 mt-1">--</div>
+        <div class="matte-subcard p-3 rounded-xl text-center">
+          <div class="text-[10px] text-slate-400 font-medium">Dư ròng</div>
+          <div id="stat-m2-net" class="text-xs font-semibold text-slate-200 mt-1">--</div>
         </div>
       </div>
 
-      <!-- Biểu đồ cột dòng tiền 12 tháng -->
-      <div class="surface-card p-4 rounded-3xl">
-        <div class="text-xs font-bold text-white mb-2 uppercase tracking-wider">Dòng Tiền 12 Tháng Năm 2026</div>
-        <div class="h-48">
+      <div class="matte-card p-4 rounded-2xl">
+        <div class="text-xs font-semibold text-slate-300 mb-2">Dòng tiền 12 tháng</div>
+        <div class="h-44">
           <canvas id="monthlyChart"></canvas>
         </div>
       </div>
 
-      <!-- Top Hạng Mục Chi Tiêu -->
-      <div class="surface-card p-4 rounded-3xl">
-        <div class="text-xs font-bold text-white mb-2 uppercase tracking-wider">Top Chi Phí Lũy Kế</div>
-        <div id="top-cat-list" class="space-y-2"></div>
+      <div class="matte-card p-4 rounded-2xl">
+        <div class="text-xs font-semibold text-slate-300 mb-2">Khoản chi tiêu chính</div>
+        <div id="top-cat-list" class="space-y-1.5"></div>
       </div>
     </div>
 
-    <!-- SECTION 3: SỔ GIAO DỊCH GẦN NHẤT -->
-    <div id="tab-history" class="hidden space-y-3">
-      <div class="flex items-center justify-between px-1">
-        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">20 Giao dịch gần nhất</div>
-        <span id="history-total-count" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">0</span>
+    <!-- PHẦN 3: LỊCH SỬ GIAO DỊCH DẠNG DANH SÁCH SẠCH SẼ -->
+    <div id="tab-history" class="hidden space-y-2 pt-1">
+      <div class="flex items-center justify-between text-xs text-slate-400 px-1 mb-1">
+        <span>Gần đây</span>
+        <span id="history-total-count">0 mục</span>
       </div>
-      <div id="history-feed" class="space-y-2">
-        <!-- Dynamic Cards -->
-      </div>
+      <div id="history-feed" class="space-y-1.5"></div>
     </div>
 
   </main>
@@ -332,40 +271,12 @@
 
     document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
 
-    
-    // Magic UI: Smooth Number Ticker Animation
-    function animateNumber(elementId, start, end, duration = 1200) {
-      const obj = document.getElementById(elementId);
-      if (!obj) return;
-      const startTime = performance.now();
-      function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        // Easing: easeOutExpo
-        const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-        const current = Math.floor(start + (end - start) * ease);
-        obj.innerHTML = `${current.toLocaleString('vi-VN')} <span class="text-base text-amber-400 font-bold">đ</span>`;
-        if (progress < 1) {
-          requestAnimationFrame(update);
-        }
-      }
-      requestAnimationFrame(update);
-    }
-
     function updateAmountDisplay() {
       const num = parseInt(currentAmountStr, 10) || 0;
       document.getElementById('display-amount').textContent = num.toLocaleString('vi-VN');
     }
 
-    
-    function triggerHaptic() {
-      if ('vibrate' in navigator) {
-        try { navigator.vibrate(8); } catch(e) {}
-      }
-    }
-
     function pressNum(digit) {
-      triggerHaptic();
       if (currentAmountStr === "0") {
         currentAmountStr = digit;
       } else if (currentAmountStr.length < 11) {
@@ -375,7 +286,6 @@
     }
 
     function pressK(suffix) {
-      triggerHaptic();
       if (currentAmountStr !== "0" && currentAmountStr.length < 9) {
         currentAmountStr += suffix;
         updateAmountDisplay();
@@ -383,7 +293,6 @@
     }
 
     function pressBack() {
-      triggerHaptic();
       if (currentAmountStr.length > 1) {
         currentAmountStr = currentAmountStr.slice(0, -1);
       } else {
@@ -397,18 +306,18 @@
       const bChi = document.getElementById('btn-type-chi');
       const bThu = document.getElementById('btn-type-thu');
       if (t === 'Chi phí') {
-        bChi.className = 'py-2.5 text-xs font-black rounded-xl bg-rose-500 text-white shadow-lg transition-all';
-        bThu.className = 'py-2.5 text-xs font-black rounded-xl text-slate-400 hover:text-white transition-all';
+        bChi.className = 'py-2 rounded-lg bg-[#161C2B] text-rose-400 shadow-sm transition-all';
+        bThu.className = 'py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all';
       } else {
-        bThu.className = 'py-2.5 text-xs font-black rounded-xl bg-emerald-500 text-white shadow-lg transition-all';
-        bChi.className = 'py-2.5 text-xs font-black rounded-xl text-slate-400 hover:text-white transition-all';
+        bThu.className = 'py-2 rounded-lg bg-[#161C2B] text-emerald-400 shadow-sm transition-all';
+        bChi.className = 'py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all';
       }
     }
 
     function selectCat(btn, cat) {
       currentCategory = cat;
-      document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('pill-active'));
-      btn.classList.add('pill-active');
+      document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active'));
+      btn.classList.add('active');
       if (cat.includes('THU NHẬP')) setType('Thu nhập');
     }
 
@@ -420,11 +329,11 @@
 
       ['tab-btn-input', 'tab-btn-stats', 'tab-btn-history'].forEach(id => {
         const btn = document.getElementById(id);
-        btn.className = 'py-2.5 rounded-xl text-slate-400 hover:text-white transition-all';
+        btn.className = 'pb-2.5 px-3 text-slate-400 hover:text-slate-200 transition-all';
       });
 
       const activeBtnId = tabId === 'tab-input' ? 'tab-btn-input' : (tabId === 'tab-stats' ? 'tab-btn-stats' : 'tab-btn-history');
-      document.getElementById(activeBtnId).className = 'py-2.5 rounded-xl bg-slate-800 text-amber-400 shadow-md transition-all font-black';
+      document.getElementById(activeBtnId).className = 'pb-2.5 px-3 border-b-2 border-slate-200 text-white font-semibold transition-all';
 
       if (tabId === 'tab-stats' && globalData) {
         renderChart(globalData.monthly);
@@ -440,21 +349,14 @@
         const data = await res.json();
         globalData = data;
 
-        // Hero Card
-        
-        const rawNet = parseInt(data.kpis.net_worth.replace(/\./g, ''), 10) || 9157000000;
-        animateNumber('hero-net-worth', 0, rawNet, 1000);
-
+        document.getElementById('hero-net-worth').textContent = data.kpis.net_worth;
         document.getElementById('hero-assets').textContent = data.kpis.total_assets + ' đ';
         document.getElementById('hero-liabilities').textContent = data.kpis.total_liabilities + ' đ';
-        document.getElementById('sheet-link').href = data.sheet_url;
 
-        // Stats tab
         document.getElementById('stat-m2-inc').textContent = data.kpis.m2_income + ' đ';
         document.getElementById('stat-m2-exp').textContent = data.kpis.m2_expense + ' đ';
         document.getElementById('stat-m2-net').textContent = data.kpis.m2_net + ' đ';
 
-        // History feed
         renderHistory(data.recent_transactions, data.total_transactions);
         renderTopCategories(data.top_categories);
 
@@ -466,34 +368,26 @@
     }
 
     function renderHistory(txs, total) {
-      document.getElementById('history-total-count').textContent = total + ' giao dịch';
+      document.getElementById('history-total-count').textContent = total + ' mục';
       const container = document.getElementById('history-feed');
       container.innerHTML = '';
       if (!txs || txs.length === 0) {
-        container.innerHTML = '<div class="text-xs text-slate-500 py-4 text-center">Chưa có giao dịch</div>';
+        container.innerHTML = '<div class="text-xs text-slate-500 py-4 text-center">Chưa có dữ liệu</div>';
         return;
       }
       txs.forEach(t => {
         const isIncome = t.type === 'Thu nhập';
         const card = document.createElement('div');
-        card.className = 'surface-card p-3 rounded-2xl flex items-center justify-between border border-slate-800/80';
+        card.className = 'matte-subcard p-3 rounded-xl flex items-center justify-between';
         card.innerHTML = `
-          <div class="flex items-center gap-3 truncate pr-2">
-            <div class="w-9 h-9 rounded-xl ${isIncome ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'} flex items-center justify-center font-bold text-sm shrink-0">
-              ${isIncome ? '↓' : '↑'}
-            </div>
-            <div class="truncate">
-              <div class="text-xs font-bold text-white truncate">${t.content}</div>
-              <div class="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
-                <span>${t.date}</span> • <span class="truncate max-w-[120px]">${t.category}</span>
-              </div>
-            </div>
+          <div class="truncate pr-2">
+            <div class="text-xs font-semibold text-slate-200 truncate">${t.content}</div>
+            <div class="text-[10px] text-slate-400 mt-0.5">${t.date} • ${t.category}</div>
           </div>
           <div class="text-right shrink-0">
-            <div class="text-xs font-black ${isIncome ? 'text-emerald-400' : 'text-rose-400'}">
+            <div class="text-xs font-semibold ${isIncome ? 'text-emerald-400' : 'text-slate-200'}">
               ${isIncome ? '+' : '-'}${t.amount} đ
             </div>
-            <div class="text-[9px] text-slate-400 font-mono mt-0.5">Tồn: ${t.balance} đ</div>
           </div>
         `;
         container.appendChild(card);
@@ -504,15 +398,12 @@
       const c = document.getElementById('top-cat-list');
       c.innerHTML = '';
       if (!cats || cats.length === 0) return;
-      cats.slice(0, 6).forEach((item, idx) => {
+      cats.slice(0, 5).forEach((item, idx) => {
         const row = document.createElement('div');
-        row.className = 'flex items-center justify-between p-2 rounded-xl bg-slate-950/60 border border-slate-800 text-xs';
+        row.className = 'flex items-center justify-between p-2 rounded-lg bg-[#111520] text-xs';
         row.innerHTML = `
-          <div class="flex items-center gap-2 truncate pr-2">
-            <span class="w-4 h-4 rounded bg-slate-800 flex items-center justify-center text-[9px] font-bold text-amber-400">${idx+1}</span>
-            <span class="truncate font-semibold text-slate-200">${item.name}</span>
-          </div>
-          <span class="font-bold text-rose-400 whitespace-nowrap">${Number(item.total).toLocaleString('vi-VN')} đ</span>
+          <span class="text-slate-300 truncate pr-2">${item.name}</span>
+          <span class="font-medium text-slate-400 whitespace-nowrap">${Number(item.total).toLocaleString('vi-VN')} đ</span>
         `;
         c.appendChild(row);
       });
@@ -530,14 +421,14 @@
             {
               label: 'Thu',
               data: monthly.income,
-              backgroundColor: 'rgba(16, 185, 129, 0.85)',
-              borderRadius: 5
+              backgroundColor: '#10B981',
+              borderRadius: 3
             },
             {
               label: 'Chi',
               data: monthly.expense,
-              backgroundColor: 'rgba(244, 63, 94, 0.85)',
-              borderRadius: 5
+              backgroundColor: '#64748B',
+              borderRadius: 3
             }
           ]
         },
@@ -545,12 +436,12 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { labels: { color: '#94A3B8', font: { size: 10, weight: 'bold' } } }
+            legend: { labels: { color: '#94A3B8', font: { size: 10 } } }
           },
           scales: {
             x: { grid: { display: false }, ticks: { color: '#64748B', font: { size: 9 } } },
             y: {
-              grid: { color: 'rgba(255,255,255,0.05)' },
+              grid: { color: 'rgba(255,255,255,0.04)' },
               ticks: { color: '#64748B', font: { size: 9 }, callback: v => (v/1000000) + 'M' }
             }
           }
@@ -564,17 +455,17 @@
       const btn = document.getElementById('btn-submit-main');
 
       if (!amtNum || amtNum <= 0) {
-        toast.className = 'p-3 rounded-2xl text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 block';
-        toast.textContent = 'Vui lòng bấm số tiền trước khi lưu';
-        setTimeout(() => toast.classList.add('hidden'), 2500);
+        toast.className = 'p-2 rounded-xl text-xs font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 block';
+        toast.textContent = 'Vui lòng nhập số tiền';
+        setTimeout(() => toast.classList.add('hidden'), 2000);
         return;
       }
 
-      const note = document.getElementById('input-note').value.trim() || (currentType === 'Chi phí' ? 'Chi tiêu cá nhân' : 'Thu nhập');
+      const note = document.getElementById('input-note').value.trim() || (currentType === 'Chi phí' ? 'Chi tiêu' : 'Thu nhập');
       const date = document.getElementById('input-date').value;
 
       btn.disabled = true;
-      btn.innerHTML = '<span>ĐANG GHI LÊN CLOUD...</span>';
+      btn.textContent = 'Đang lưu...';
 
       try {
         const res = await fetch('/api/transaction', {
@@ -590,23 +481,23 @@
         });
         const r = await res.json();
         if (res.ok) {
-          toast.className = 'p-3 rounded-2xl text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 block';
-          toast.textContent = `✓ Đã lưu thành công (${r.latency_ms}ms)`;
+          toast.className = 'p-2 rounded-xl text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 block';
+          toast.textContent = 'Đã lưu thành công';
           currentAmountStr = "0";
           updateAmountDisplay();
           document.getElementById('input-note').value = '';
           fetchOverview(false);
         } else {
-          toast.className = 'p-3 rounded-2xl text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 block';
-          toast.textContent = '✗ ' + (r.detail || 'Lỗi lưu dữ liệu');
+          toast.className = 'p-2 rounded-xl text-xs font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 block';
+          toast.textContent = r.detail || 'Lỗi lưu';
         }
       } catch (err) {
-        toast.className = 'p-3 rounded-2xl text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 block';
-        toast.textContent = '✗ Mất kết nối máy chủ';
+        toast.className = 'p-2 rounded-xl text-xs font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 block';
+        toast.textContent = 'Lỗi kết nối';
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<span>XÁC NHẬN LƯU (ĐỒNG BỘ 12MS)</span>';
-        setTimeout(() => toast.classList.add('hidden'), 3000);
+        btn.textContent = 'Lưu giao dịch';
+        setTimeout(() => toast.classList.add('hidden'), 2500);
       }
     }
 
