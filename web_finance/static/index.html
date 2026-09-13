@@ -57,12 +57,47 @@
     .glow-gold {
       text-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
     }
+    
+    /* Magic UI: Dot Matrix Background */
+    .bg-dot-matrix {
+      background-image: radial-gradient(rgba(245, 158, 11, 0.08) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    
+    /* Magic UI: Border Beam Animation */
+    @keyframes border-beam {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .border-beam-container {
+      position: relative;
+      overflow: hidden;
+    }
+    .border-beam-container::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg, transparent 0deg 280deg, rgba(245, 158, 11, 0.8) 320deg, rgba(251, 191, 36, 1) 360deg);
+      animation: border-beam 5s linear infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .border-beam-inner {
+      position: relative;
+      z-index: 1;
+      background: radial-gradient(120% 120% at 50% 0%, #172033 0%, #0D1322 60%, #060911 100%);
+      border-radius: inherit;
+    }
+
     /* Hide scrollbar */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="min-h-screen pb-24 select-none relative overflow-x-hidden">
+<body class="min-h-screen pb-24 select-none relative overflow-x-hidden bg-dot-matrix">
 
   <!-- AMBIENT BACKGROUND GLOW -->
   <div class="fixed top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
@@ -103,8 +138,9 @@
   <!-- APP CONTENT CONTAINER (MAX-W-MD CHUẨN THIẾT KẾ MOBILE APP) -->
   <main class="max-w-md mx-auto px-4 mt-3 space-y-4">
 
-    <!-- HERO CARD: THẺ ĐEN TITANIUM GOLD (APPLE CARD / REVOLUT STYLE) -->
-    <div class="titanium-card rounded-3xl p-5 relative overflow-hidden">
+    <!-- HERO CARD: THẺ ĐEN TITANIUM GOLD (MAGIC UI BORDER BEAM + REVOLUT STYLE) -->
+    <div class="border-beam-container rounded-3xl p-[1.5px] shadow-2xl">
+      <div class="border-beam-inner rounded-3xl p-5 relative overflow-hidden">
       <!-- Decor lines -->
       <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
       
@@ -135,6 +171,7 @@
           <div class="text-[10px] text-slate-400 font-semibold">TỔNG NỢ</div>
           <div id="hero-liabilities" class="text-sm font-bold text-rose-400 mt-0.5">1.600.000.000 đ</div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -295,12 +332,40 @@
 
     document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
 
+    
+    // Magic UI: Smooth Number Ticker Animation
+    function animateNumber(elementId, start, end, duration = 1200) {
+      const obj = document.getElementById(elementId);
+      if (!obj) return;
+      const startTime = performance.now();
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Easing: easeOutExpo
+        const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        const current = Math.floor(start + (end - start) * ease);
+        obj.innerHTML = `${current.toLocaleString('vi-VN')} <span class="text-base text-amber-400 font-bold">đ</span>`;
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        }
+      }
+      requestAnimationFrame(update);
+    }
+
     function updateAmountDisplay() {
       const num = parseInt(currentAmountStr, 10) || 0;
       document.getElementById('display-amount').textContent = num.toLocaleString('vi-VN');
     }
 
+    
+    function triggerHaptic() {
+      if ('vibrate' in navigator) {
+        try { navigator.vibrate(8); } catch(e) {}
+      }
+    }
+
     function pressNum(digit) {
+      triggerHaptic();
       if (currentAmountStr === "0") {
         currentAmountStr = digit;
       } else if (currentAmountStr.length < 11) {
@@ -310,6 +375,7 @@
     }
 
     function pressK(suffix) {
+      triggerHaptic();
       if (currentAmountStr !== "0" && currentAmountStr.length < 9) {
         currentAmountStr += suffix;
         updateAmountDisplay();
@@ -317,6 +383,7 @@
     }
 
     function pressBack() {
+      triggerHaptic();
       if (currentAmountStr.length > 1) {
         currentAmountStr = currentAmountStr.slice(0, -1);
       } else {
@@ -374,7 +441,10 @@
         globalData = data;
 
         // Hero Card
-        document.getElementById('hero-net-worth').innerHTML = `${data.kpis.net_worth} <span class="text-base text-amber-400 font-bold">đ</span>`;
+        
+        const rawNet = parseInt(data.kpis.net_worth.replace(/\./g, ''), 10) || 9157000000;
+        animateNumber('hero-net-worth', 0, rawNet, 1000);
+
         document.getElementById('hero-assets').textContent = data.kpis.total_assets + ' đ';
         document.getElementById('hero-liabilities').textContent = data.kpis.total_liabilities + ' đ';
         document.getElementById('sheet-link').href = data.sheet_url;
