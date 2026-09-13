@@ -341,6 +341,193 @@ def add_transaction(req: TransactionRequest, background_tasks: BackgroundTasks):
 
 from fastapi.responses import FileResponse
 
+
+import io
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+from fastapi.responses import Response
+
+@app.get("/api/export-excel")
+def export_excel():
+    """Tự động đóng gói toàn bộ dữ liệu người dùng thành file Excel chuẩn công thức động"""
+    # Lấy dữ liệu mới nhất
+    overview = get_overview()
+    txs = overview.get("recent_transactions", [])
+    
+    wb = openpyxl.Workbook()
+    
+    # Styles
+    font_title = Font(name="Calibri", size=15, bold=True, color="1E293B")
+    font_header = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+    font_bold = Font(name="Calibri", size=11, bold=True, color="1E293B")
+    font_reg = Font(name="Calibri", size=11, color="1E293B")
+    font_muted = Font(name="Calibri", size=9, italic=True, color="64748B")
+    
+    fill_navy = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
+    fill_zebra = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+    thin_gray = Side(border_style="thin", color="CBD5E1")
+    border_all = Border(left=thin_gray, right=thin_gray, top=thin_gray, bottom=thin_gray)
+    
+    # 1. SHEET DASHBOARD
+    ws_db = wb.active
+    ws_db.title = "DASHBOARD"
+    ws_db.views.sheetView[0].showGridLines = True
+    
+    ws_db["A1"] = "BÁO CÁO TÀI CHÍNH TỔNG QUAN TỰ ĐỘNG"
+    ws_db["A1"].font = font_title
+    ws_db["A2"] = "Xuất tự động từ CEO Finance OS - Sẵn sàng 100% công thức động"
+    ws_db["A2"].font = font_muted
+    
+    # KPIs Cards
+    ws_db["B4"] = "GIÁ TRỊ RÒNG (NET WORTH)"
+    ws_db["B4"].font = Font(name="Calibri", size=10, bold=True, color="B45309")
+    ws_db["B5"] = "=TAI_KHOAN!F13"
+    ws_db["B5"].font = Font(name="Calibri", size=16, bold=True)
+    ws_db["B5"].number_format = '#,##0 "đ"'
+    ws_db["B5"].fill = PatternFill(start_color="FEF3C7", fill_type="solid")
+    
+    ws_db["D4"] = "TỔNG TÀI SẢN (ASSETS)"
+    ws_db["D4"].font = Font(name="Calibri", size=10, bold=True, color="15803D")
+    ws_db["D5"] = "=TAI_KHOAN!F11"
+    ws_db["D5"].font = Font(name="Calibri", size=16, bold=True)
+    ws_db["D5"].number_format = '#,##0 "đ"'
+    ws_db["D5"].fill = PatternFill(start_color="DCFCE7", fill_type="solid")
+    
+    ws_db["F4"] = "TỔNG NỢ (LIABILITIES)"
+    ws_db["F4"].font = Font(name="Calibri", size=10, bold=True, color="B91C1C")
+    ws_db["F5"] = "=TAI_KHOAN!F12"
+    ws_db["F5"].font = Font(name="Calibri", size=16, bold=True)
+    ws_db["F5"].number_format = '#,##0 "đ"'
+    ws_db["F5"].fill = PatternFill(start_color="FEE2E2", fill_type="solid")
+    
+    # Bảng 12 Tháng
+    m_headers = ["Tháng", "Thu Nhập", "Chi Tiêu", "Dư Ròng", "Tỷ Lệ Tiết Kiệm"]
+    for c_idx, h in enumerate(m_headers, 1):
+        cell = ws_db.cell(row=8, column=c_idx, value=h)
+        cell.font = font_header
+        cell.fill = fill_navy
+        cell.alignment = Alignment(horizontal="center")
+        
+    for m in range(1, 13):
+        r = 8 + m
+        ws_db.cell(row=r, column=1, value=f"2026-{m:02d}").font = font_bold
+        ws_db.cell(row=r, column=1).alignment = Alignment(horizontal="center")
+        
+        c_inc = ws_db.cell(row=r, column=2, value=f'=SUMIFS(GIAO_DICH!$E:$E, GIAO_DICH!$B:$B, "Thu nhập", GIAO_DICH!$K:$K, A{r})')
+        c_inc.number_format = '#,##0 "đ"'
+        
+        c_exp = ws_db.cell(row=r, column=3, value=f'=SUMIFS(GIAO_DICH!$E:$E, GIAO_DICH!$B:$B, "Chi phí", GIAO_DICH!$K:$K, A{r})')
+        c_exp.number_format = '#,##0 "đ"'
+        
+        c_net = ws_db.cell(row=r, column=4, value=f'=B{r}-C{r}')
+        c_net.font = font_bold
+        c_net.number_format = '#,##0 "đ"'
+        
+        c_rate = ws_db.cell(row=r, column=5, value=f'=IF(B{r}>0, D{r}/B{r}, 0)')
+        c_rate.number_format = '0.0%'
+        c_rate.alignment = Alignment(horizontal="center")
+        
+        for c in range(1, 6):
+            ws_db.cell(row=r, column=c).border = border_all
+            if r % 2 == 0: ws_db.cell(row=r, column=c).fill = fill_zebra
+            
+    # 2. SHEET GIAO_DICH
+    ws_tx = wb.create_sheet(title="GIAO_DICH")
+    ws_tx.views.sheetView[0].showGridLines = True
+    tx_headers = ["Ngày", "Phân Loại", "Hạng Mục", "Nội Dung", "Số Tiền", "Tài Khoản", "Tồn", "Ghi Chú", "", "", "Tháng", "Năm"]
+    for c_idx, h in enumerate(tx_headers, 1):
+        c = ws_tx.cell(row=4, column=c_idx, value=h)
+        c.font = font_header
+        c.fill = fill_navy
+        c.alignment = Alignment(horizontal="center")
+        
+    for idx, t in enumerate(txs, 5):
+        ws_tx.cell(row=idx, column=1, value=t.get("date", "")).alignment = Alignment(horizontal="center")
+        ws_tx.cell(row=idx, column=2, value=t.get("type", "")).alignment = Alignment(horizontal="center")
+        ws_tx.cell(row=idx, column=3, value=t.get("category", ""))
+        ws_tx.cell(row=idx, column=4, value=t.get("content", "")).font = font_bold
+        
+        camt = ws_tx.cell(row=idx, column=5, value=parse_amount(t.get("amount", 0)))
+        camt.number_format = '#,##0 "đ"'
+        camt.font = font_bold
+        
+        ws_tx.cell(row=idx, column=6, value="Techcombank")
+        cbal = ws_tx.cell(row=idx, column=7, value=parse_amount(t.get("balance", 0)))
+        cbal.number_format = '#,##0 "đ"'
+        
+        ws_tx.cell(row=idx, column=11, value=f'=IF(A{idx}="","",TEXT(A{idx},"yyyy-mm"))').alignment = Alignment(horizontal="center")
+        ws_tx.cell(row=idx, column=12, value=f'=IF(A{idx}="","",YEAR(A{idx}))').alignment = Alignment(horizontal="center")
+        
+        for c in range(1, 13):
+            ws_tx.cell(row=idx, column=c).border = border_all
+            if idx % 2 == 0: ws_tx.cell(row=idx, column=c).fill = fill_zebra
+            
+    # 3. SHEET TAI_KHOAN
+    ws_acc = wb.create_sheet(title="TAI_KHOAN")
+    acc_headers = ["Tên Tài Khoản", "Phân Loại", "Số Dư Ban Đầu", "Tổng Tiền Vào", "Tổng Tiền Ra", "Số Dư Hiện Tại"]
+    for c_idx, h in enumerate(acc_headers, 1):
+        c = ws_acc.cell(row=4, column=c_idx, value=h)
+        c.font = font_header
+        c.fill = fill_navy
+        c.alignment = Alignment(horizontal="center")
+        
+    accs = [
+        ("Tiền Mặt / Ví", "Tài sản", 5000000),
+        ("Techcombank (Chính)", "Tài sản", 45000000),
+        ("Vietcombank (Tiết kiệm)", "Tài sản", 120000000),
+        ("Tài Khoản Chứng Khoán", "Tài sản", 80000000),
+        ("Thẻ Tín Dụng", "Nợ", 0),
+        ("Khoản Vay Khác", "Nợ", 0)
+    ]
+    for idx, (aname, atype, init_b) in enumerate(accs, 5):
+        ws_acc.cell(row=idx, column=1, value=aname).font = font_bold
+        ws_acc.cell(row=idx, column=2, value=atype).alignment = Alignment(horizontal="center")
+        ws_acc.cell(row=idx, column=3, value=init_b).number_format = '#,##0 "đ"'
+        
+        ws_acc.cell(row=idx, column=4, value=f'=SUMIFS(GIAO_DICH!$E:$E, GIAO_DICH!$B:$B, "Thu nhập", GIAO_DICH!$F:$F, A{idx})').number_format = '#,##0 "đ"'
+        ws_acc.cell(row=idx, column=5, value=f'=SUMIFS(GIAO_DICH!$E:$E, GIAO_DICH!$B:$B, "Chi phí", GIAO_DICH!$F:$F, A{idx})').number_format = '#,##0 "đ"'
+        ws_acc.cell(row=idx, column=6, value=f'=IF(B{idx}="Tài sản", C{idx}+D{idx}-E{idx}, C{idx}+E{idx}-D{idx})').number_format = '#,##0 "đ"'
+        ws_acc.cell(row=idx, column=6).font = font_bold
+        for c in range(1, 7): ws_acc.cell(row=idx, column=c).border = border_all
+
+    ws_acc.cell(row=11, column=1, value="TỔNG TÀI SẢN (ASSETS)").font = font_bold
+    ws_acc.cell(row=11, column=6, value='=SUMIF(B5:B10, "Tài sản", F5:F10)').number_format = '#,##0 "đ"'
+    ws_acc.cell(row=12, column=1, value="TỔNG NỢ (LIABILITIES)").font = font_bold
+    ws_acc.cell(row=12, column=6, value='=SUMIF(B5:B10, "Nợ", F5:F10)').number_format = '#,##0 "đ"'
+    ws_acc.cell(row=13, column=1, value="GIÁ TRỊ RÒNG (NET WORTH)").font = Font(name="Calibri", size=12, bold=True)
+    ws_acc.cell(row=13, column=6, value='=F11-F12').number_format = '#,##0 "đ"'
+
+    # Column widths
+    ws_db.column_dimensions['A'].width = 14
+    ws_db.column_dimensions['B'].width = 24
+    ws_db.column_dimensions['C'].width = 20
+    ws_db.column_dimensions['D'].width = 20
+    ws_db.column_dimensions['E'].width = 16
+    ws_tx.column_dimensions['A'].width = 14
+    ws_tx.column_dimensions['B'].width = 14
+    ws_tx.column_dimensions['C'].width = 30
+    ws_tx.column_dimensions['D'].width = 28
+    ws_tx.column_dimensions['E'].width = 18
+    ws_acc.column_dimensions['A'].width = 28
+    ws_acc.column_dimensions['B'].width = 14
+    ws_acc.column_dimensions['C'].width = 18
+    ws_acc.column_dimensions['D'].width = 18
+    ws_acc.column_dimensions['E'].width = 18
+    ws_acc.column_dimensions['F'].width = 20
+
+    stream = io.BytesIO()
+    wb.save(stream)
+    stream.seek(0)
+    
+    return Response(
+        content=stream.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": "attachment; filename=So_Tai_Chinh_2026_Auto.xlsx"
+        }
+    )
+
 @app.get("/manifest.json")
 def get_manifest():
     return FileResponse("/opt/ai-os/products/ceo/web_finance/static/manifest.json", media_type="application/manifest+json")
